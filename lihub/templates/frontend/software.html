@@ -1,0 +1,82 @@
+{% from 'macros/_misc.html' import render_pagination, render_user_table %}
+
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{cpt.name}}{% endblock %}
+
+{% block body %}
+<div>
+  <ol class="breadcrumb">
+  <li><a href="{{ url_for('frontend.browse') }}">Browse</a></li>
+  <li class="active">{{cpt.name}}</li>
+</ol>
+
+<div>
+  <img src="{{icon_url}}" alt="Icon" width="64px" height="64px" style="float: left;" />
+  <div style="margin-left: 8px;">
+      <h2>{{cpt.name}}</h2>
+      {% if cpt.kind != "desktop" %}<span class="label label-default" style="float:right;">technical</span>{% endif %}
+    <h4>{{cpt.summary}}</h4>
+    <br/>
+
+    {{cpt.description|safe}}
+  </div>
+</div>
+
+<br/><br/>
+<div class="panel panel-default">
+  <div class="panel-body">
+    {% if cpt.url %}
+    <p><a href="{{cpt.url}}">Homepage</a></p>
+    {% endif %}
+    {% if cpt.developer_name %}
+    <p><b>Developed by:</b> {{cpt.developer_name}}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="panel panel-primary">
+  <div class="panel-heading">Packages</div>
+  <table class="table">
+      <thead>
+        <tr>
+          <th>Package</th>
+          <th>Version</th>
+          <th>Architecture</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for pkg in packages %}
+        <tr>
+          <td>{{pkg.name}}</td>
+          <td>{{pkg.version}}</td>
+          <td>{{pkg.architecture}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+  </table>
+</div>
+
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="detailsHead">
+      <h4 class="panel-title">
+        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTecDetails" aria-expanded="false" aria-controls="collapseTecDetails">
+          Technical Details
+        </a>
+      </h4>
+    </div>
+    <div id="collapseTecDetails" class="panel-collapse collapse" role="tabpanel" aria-labelledby="detailsHead">
+      <div class="panel-body">
+        <p><b>Dependencies:</b></p>
+        <p>{{packages[0].dependencies}}</p>
+        <p><b>Installation Command:</b></p>
+        <div class="well well-sm">
+          sudo lipa install {{packages[0].name}}-{{packages[0].version}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

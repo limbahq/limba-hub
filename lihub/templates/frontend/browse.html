@@ -1,0 +1,23 @@
+{% from 'macros/_misc.html' import render_pagination, render_user_table %}
+
+{% extends 'layouts/base.html' %}
+
+{% block title %}Browse Software{% endblock %}
+
+{% block body %}
+  <h2>Browse Software</h2>
+
+
+  <div class="row">
+    {% for cat in categories %}
+    <div class="col-xs-6 col-md-4">
+      <a class="btn btn-default" role="button" href="{{ url_for('frontend.browse_category', category=cat.idname) }}" style="margin-bottom: 20px;">
+        <img src="{{ url_for('static', filename='img/categories/') }}{{cat.idname}}.png" alt="{{cat.idname}}" width="80px" height="80px" style="float: left;"/>&nbsp;
+        <div style="float: right;"><b>{{cat.name}}</b><br/>
+        {{cat.description}}</div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+{% endblock %}

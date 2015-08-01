@@ -1,0 +1,28 @@
+{% extends 'settings/layout.html' %}
+
+{% block body %}
+<div style="width:300px;margin-top:40px;">
+
+        <div class="input-group"> <span class="input-group-addon">Filter</span>
+        <input id="filter" type="text" class="form-control" placeholder="Type here...">
+    </div>
+    <br/>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Creation date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody class="searchable">
+        {% for item in repos %}
+           <td>{{item.name}}</td>
+           <td>{{item.created_time}}</td>
+         </tr>
+       {% endfor %}
+      </tbody>
+    </table>
+
+</div>
+{% endblock %}
