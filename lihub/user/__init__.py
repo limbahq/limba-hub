@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .models import UserDetail, User
+from .models import UserDetail, User, Role, user_datastore
 from .views import user
-from .constants import USER_ROLE, ADMIN, USER, USER_STATUS, NEW, ACTIVE
+from .constants import DEFAULT_USER_AVATAR

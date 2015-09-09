@@ -24,21 +24,21 @@ from flask.ext.login import login_required, current_user
 from .models import Repository
 
 
-repo = Blueprint('repository', __name__, url_prefix='/repository')
+repository = Blueprint('repository', __name__, url_prefix='/repository')
 
 
-@repo.route('/')
+@repository.route('/')
 def index():
     return render_template('user/index.html', user=current_user)
 
 
-@repo.route('/<int:user_id>/profile')
+@repository.route('/<int:user_id>/profile')
 def profile(user_id):
     user = User.get_by_id(user_id)
     return render_template('user/profile.html', user=user)
 
 
-@repo.route('/<int:user_id>/avatar/<path:filename>')
+@repository.route('/<int:user_id>/avatar/<path:filename>')
 def avatar(user_id, filename):
     dir_path = os.path.join(APP.config['UPLOAD_FOLDER'], 'user_%s' % user_id)
     return send_from_directory(dir_path, filename, as_attachment=True)

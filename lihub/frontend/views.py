@@ -27,36 +27,11 @@ from flask.ext.login import login_required, login_user, current_user, logout_use
 
 from ..user import User, UserDetail
 from ..repository import Repository, Package, Component, Category
-from ..extensions import db, mail, login_manager, oid
-from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm
+from ..extensions import db, mail
+from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, CreateProfileForm
 
 
 frontend = Blueprint('frontend', __name__)
-
-
-@frontend.route('/login/openid', methods=['GET', 'POST'])
-@oid.loginhandler
-def login_openid():
-    if current_user.is_authenticated():
-        return redirect(url_for('user.index'))
-
-    form = OpenIDForm()
-    if form.validate_on_submit():
-        openid = form.openid.data
-        current_app.logger.debug('login with openid(%s)...' % openid)
-        return oid.try_login(openid, ask_for=['email', 'fullname', 'nickname'])
-    return render_template('frontend/login_openid.html', form=form, error=oid.fetch_error())
-
-
-@oid.after_login
-def create_or_login(resp):
-    user = User.query.filter_by(openid=resp.identity_url).first()
-    if user and login_user(user):
-        flash('Logged in', 'success')
-        return redirect(oid.get_next_url() or url_for('user.index'))
-    return redirect(url_for('frontend.create_profile', next=oid.get_next_url(),
-            name=resp.fullname or resp.nickname, email=resp.email,
-            openid=resp.identity_url))
 
 
 @frontend.route('/create_profile', methods=['GET', 'POST'])
@@ -65,8 +40,7 @@ def create_profile():
         return redirect(url_for('user.index'))
 
     form = CreateProfileForm(name=request.args.get('name'),
-            email=request.args.get('email'),
-            openid=request.args.get('openid'))
+            email=request.args.get('email'))
 
     if form.validate_on_submit():
         user = User()

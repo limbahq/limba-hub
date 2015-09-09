@@ -18,49 +18,18 @@
 
 from sqlalchemy import Column, types
 from sqlalchemy.ext.mutable import Mutable
-from werkzeug import generate_password_hash, check_password_hash
-from flask.ext.login import UserMixin
+from flask.ext.security import Security, UserMixin, RoleMixin, SQLAlchemyUserDatastore
+from flask.ext.security.utils import encrypt_password, verify_password
 
 from ..extensions import db
 from ..utils import get_current_time, SEX_TYPE, STRING_LEN
-from .constants import USER, USER_ROLE, ADMIN, INACTIVE, USER_STATUS
+from .constants import DEFAULT_USER_AVATAR
 from ..repository.models import Repository
 
 
-class DenormalizedText(Mutable, types.TypeDecorator):
-    """
-    Stores denormalized primary keys that can be
-    accessed as a set.
-
-    :param coerce: coercion function that ensures correct
-                   type is returned
-
-    :param separator: separator character
-    """
-
-    impl = types.Text
-
-    def __init__(self, coerce=int, separator=" ", **kwargs):
-
-        self.coerce = coerce
-        self.separator = separator
-
-        super(DenormalizedText, self).__init__(**kwargs)
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            items = [str(item).strip() for item in value]
-            value = self.separator.join(item for item in items if item)
-        return value
-
-    def process_result_value(self, value, dialect):
-        if not value:
-            return set()
-        return set(self.coerce(item) for item in value.split(self.separator))
-
-    def copy_value(self, value):
-        return set(value)
-
+roles_users = db.Table('roles_users',
+        db.Column('user_id', db.Integer(), db.ForeignKey('users.id')),
+        db.Column('role_id', db.Integer(), db.ForeignKey('roles.id')))
 
 class UserDetail(db.Model):
 
@@ -81,6 +50,15 @@ class UserDetail(db.Model):
     created_time = Column(db.DateTime, default=get_current_time)
 
 
+class Role(db.Model, RoleMixin):
+
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+
 class User(db.Model, UserMixin):
 
     __tablename__ = 'users'
@@ -88,13 +66,19 @@ class User(db.Model, UserMixin):
     id = Column(db.Integer, primary_key=True)
     name = Column(db.String(STRING_LEN), nullable=False, unique=True)
     email = Column(db.String(STRING_LEN), nullable=False, unique=True)
-    openid = Column(db.String(STRING_LEN), unique=True)
-    activation_key = Column(db.String(STRING_LEN))
     created_time = Column(db.DateTime, default=get_current_time)
+    active = db.Column(db.Boolean())
+    confirmed_at = db.Column(db.DateTime())
+    roles = db.relationship('Role', secondary=roles_users,
+                            backref=db.backref('users', lazy='dynamic'))
 
     pgpfpr = Column(db.String(STRING_LEN), unique=True)
 
     avatar = Column(db.String(STRING_LEN))
+
+    user_detail_id = Column(db.Integer, db.ForeignKey("user_details.id"))
+    user_detail = db.relationship("UserDetail", uselist=False, backref="user")
+
 
     _password = Column('password', db.String(STRING_LEN), nullable=False)
 
@@ -102,7 +86,7 @@ class User(db.Model, UserMixin):
         return self._password
 
     def _set_password(self, password):
-        self._password = generate_password_hash(password)
+        self._password = encrypt_password(password)
     # Hide password encryption by exposing password field only.
     password = db.synonym('_password',
                           descriptor=property(_get_password,
@@ -111,28 +95,8 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         if self.password is None:
             return False
-        return check_password_hash(self.password, password)
+        return verify_password(self.password, password)
 
-    # ================================================================
-    role_code = Column(db.SmallInteger, default=USER, nullable=False)
-
-    @property
-    def role(self):
-        return USER_ROLE[self.role_code]
-
-    def is_admin(self):
-        return self.role_code == ADMIN
-
-    # ================================================================
-    # One-to-many relationship between users and user_statuses.
-    status_code = Column(db.SmallInteger, default=INACTIVE)
-
-    @property
-    def status(self):
-        return USER_STATUS[self.status_code]
-
-    user_detail_id = Column(db.Integer, db.ForeignKey("user_details.id"))
-    user_detail = db.relationship("UserDetail", uselist=False, backref="user")
 
     # ================================================================
     # Class methods
@@ -166,3 +130,5 @@ class User(db.Model, UserMixin):
 
     def check_name(self, name):
         return User.query.filter(db.and_(User.name == name, User.email != self.id)).count() == 0
+
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)

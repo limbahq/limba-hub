@@ -76,13 +76,7 @@ class ReauthForm(Form):
     submit = SubmitField('Reauthenticate')
 
 
-class OpenIDForm(Form):
-    openid = TextField(u'Your OpenID', [Required()])
-    submit = SubmitField(u'Log in with OpenID')
-
-
 class CreateProfileForm(Form):
-    openid = HiddenField()
     name = TextField(u'Choose your username', [Required(), Length(USERNAME_LEN_MIN, USERNAME_LEN_MAX)],
             description=u"Don't worry. you can change it later.")
     email = EmailField(u'Email', [Required(), Email()], description=u"What's your email address?")

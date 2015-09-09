@@ -81,10 +81,6 @@ class DefaultConfig(BaseConfig):
     MAIL_PASSWORD = 'yourpass'
     MAIL_DEFAULT_SENDER = MAIL_USERNAME
 
-    # Flask-openid: http://pythonhosted.org/Flask-OpenID/
-    OPENID_FS_STORE_PATH = os.path.join(INSTANCE_FOLDER_PATH, 'openid')
-    make_dir(OPENID_FS_STORE_PATH)
-
 
 class TestConfig(BaseConfig):
     TESTING = True

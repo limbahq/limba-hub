@@ -20,7 +20,7 @@ from flask.ext.script import Manager
 
 from lihub import create_app
 from lihub.extensions import db
-from lihub.user import User, UserDetail, ADMIN, ACTIVE
+from lihub.user import User, UserDetail, user_datastore
 from lihub.repository import Repository, Category
 from lihub.utils import MALE
 from lihub.config import DefaultConfig
@@ -44,18 +44,18 @@ def initdb():
     db.drop_all()
     db.create_all()
 
-    admin = User(
-            name=u'admin',
-            email=u'admin@example.com',
-            password=u'123456',
-            role_code=ADMIN,
-            status_code=ACTIVE,
-            user_detail=UserDetail(
+    admin = user_datastore.create_user(
+                name=u'admin',
+                email=u'admin@example.com',
+                password=u'123456',
+                active=True,
+                user_detail=UserDetail(
                 sex_code=MALE,
                 url=u'http://admin.example.com',
                 location=u'Berlin',
                 bio=u'Master of the Universe!'))
-    db.session.add(admin)
+    admin_role = user_datastore.create_role(name='admin', description="The masters of each and everything.")
+    user_datastore.add_role_to_user(admin, admin_role)
 
     master_repo = Repository(
             name=u'master',

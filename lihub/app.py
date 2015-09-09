@@ -20,14 +20,15 @@ import os
 
 from flask import Flask, request, render_template
 from flask.ext.babel import Babel
+from flask.ext.security import Security
 
 from .config import DefaultConfig
-from .user import User, user
+from .user import User, user, user_datastore
 from .settings import settings
 from .frontend import frontend
-from .api import api
+from .repository import repository
 from .admin import admin
-from .extensions import db, mail, cache, login_manager, oid
+from .extensions import db, mail, cache
 from .utils import INSTANCE_FOLDER_PATH
 
 
@@ -38,7 +39,7 @@ DEFAULT_BLUEPRINTS = (
     frontend,
     user,
     settings,
-    api,
+    repository,
     admin,
 )
 
@@ -92,23 +93,22 @@ def configure_extensions(app):
     # flask-babel
     babel = Babel(app)
 
+    # Security
+    security = Security(app, user_datastore)
+
     @babel.localeselector
     def get_locale():
         accept_languages = app.config.get('ACCEPT_LANGUAGES')
         return request.accept_languages.best_match(accept_languages)
 
-    # flask-login
-    login_manager.login_view = 'frontend.login'
-    login_manager.refresh_view = 'frontend.reauth'
+    # Security
+    app.login_manager.login_view = 'frontend.login'
+    app.login_manager.refresh_view = 'frontend.reauth'
 
-    @login_manager.user_loader
+    @app.login_manager.user_loader
     def load_user(id):
         return User.query.get(id)
-    login_manager.setup_app(app)
-
-    # flask-openid
-    oid.init_app(app)
-
+    app.login_manager.setup_app(app)
 
 def configure_blueprints(app, blueprints):
     """Configure blueprints in views."""

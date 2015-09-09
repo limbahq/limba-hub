@@ -40,8 +40,8 @@ def profile():
     user = User.query.filter_by(name=current_user.name).first_or_404()
     form = ProfileForm(obj=user.user_detail,
             email=current_user.email,
-            role_code=current_user.role_code,
-            status_code=current_user.status_code,
+            #role_code=current_user.role_code,
+            active=current_user.active,
             next=request.args.get('next'))
 
     if form.validate_on_submit():
