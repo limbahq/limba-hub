@@ -21,7 +21,7 @@ from flask.ext.script import Manager
 from lihub import create_app
 from lihub.extensions import db
 from lihub.user import User, UserDetail, user_datastore
-from lihub.repository import Repository, Category
+from lihub.repository import Repository, Category, RepoFlag
 from lihub.utils import MALE
 from lihub.config import DefaultConfig
 
@@ -59,9 +59,17 @@ def initdb():
 
     master_repo = Repository(
             name=u'master',
-            user=admin
+            user=admin,
+            toplevel=True
+            )
+    master_nonfree_repo = Repository(
+            name=u'nonfree',
+            user=admin,
+            toplevel=True,
+            flag=RepoFlag.NONFREE
             )
     db.session.add(master_repo)
+    db.session.add(master_nonfree_repo)
 
     db.session.add(Category(idname="office",        name="Office", description="Office software"))
     db.session.add(Category(idname="tools",         name="Tools", description="Helpful utilities"))

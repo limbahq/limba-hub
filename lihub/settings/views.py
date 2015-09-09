@@ -97,13 +97,3 @@ def password():
 
     return render_template('settings/password.html', user=user,
             active="password", form=form)
-
-@settings.route('/repocp', methods=['GET', 'POST'])
-@login_required
-def repocp():
-    user = User.query.filter_by(name=current_user.name).first_or_404()
-
-    repos = Repository.query.filter_by(user=user)
-
-    return render_template('settings/repos.html', user=user,
-            active="repocp", repos=repos)

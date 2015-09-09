@@ -21,6 +21,8 @@ from sqlalchemy.ext.mutable import Mutable
 from ..extensions import db
 from ..utils import get_current_time, STRING_LEN
 
+from .constants import RepoFlag
+
 class Repository(db.Model):
 
     __tablename__ = 'repositories'
@@ -28,6 +30,8 @@ class Repository(db.Model):
     id = Column(db.Integer, primary_key=True)
     name = Column(db.String(STRING_LEN), nullable=False)
     created_time = Column(db.DateTime, default=get_current_time)
+    toplevel = Column(db.Boolean, default=False)
+    flag = Column(db.Integer, default=RepoFlag.NONE)
 
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship("User", uselist=False, backref="repositories")

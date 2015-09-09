@@ -1,7 +1,8 @@
-{% extends 'settings/layout.html' %}
+{% from 'macros/_misc.html' import render_pagination, render_user_table %}
+
+{% extends 'layouts/base.html' %}
 
 {% block body %}
-<div style="width:300px;margin-top:40px;">
 
         <div class="input-group"> <span class="input-group-addon">Filter</span>
         <input id="filter" type="text" class="form-control" placeholder="Type here...">
@@ -24,5 +25,4 @@
       </tbody>
     </table>
 
-</div>
 {% endblock %}

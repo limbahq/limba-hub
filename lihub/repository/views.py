@@ -19,7 +19,9 @@ import os
 
 from flask import Blueprint, render_template, send_from_directory, abort
 from flask import current_app as APP
-from flask.ext.login import login_required, current_user
+from flask.ext.security import login_required, current_user
+
+from ..extensions import db
 
 from .models import Repository
 
@@ -32,13 +34,10 @@ def index():
     return render_template('user/index.html', user=current_user)
 
 
-@repository.route('/<int:user_id>/profile')
-def profile(user_id):
-    user = User.get_by_id(user_id)
-    return render_template('user/profile.html', user=user)
+@repository.route('/manage', methods=['GET', 'POST'])
+@login_required
+def manage():
+    repos = Repository.query.filter_by(user=current_user)
 
-
-@repository.route('/<int:user_id>/avatar/<path:filename>')
-def avatar(user_id, filename):
-    dir_path = os.path.join(APP.config['UPLOAD_FOLDER'], 'user_%s' % user_id)
-    return send_from_directory(dir_path, filename, as_attachment=True)
+    return render_template('repos/manage.html', user=current_user,
+            active="repocp", repos=repos)
