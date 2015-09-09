@@ -16,8 +16,10 @@
 # License along with this program.
 
 from ..repository.models import *
+from ..user import User
 from ..extensions import db
-from ..utils import get_current_time, REPO_ROOT
+from ..utils import get_current_time
+from .dscfile import DSCFile
 from gi.repository import Limba
 from gi.repository import AppStream
 from hashlib import sha256
@@ -25,6 +27,7 @@ import os
 import glob
 import shutil
 import re
+
 
 class IPKImporter():
     def __init__(self, search_dir):
@@ -44,7 +47,7 @@ class IPKImporter():
 
         return cats
 
-    def _import_package(self, pkg_fname):
+    def _import_package(self, pkg_fname, sha256sum, dsc):
         pkg = Limba.Package()
         pkg.open_file(pkg_fname)
 
@@ -70,17 +73,17 @@ class IPKImporter():
             cpt_desc = "<p>A software component</p>"
 
         # we just accept packages for the master repository for now
-        repo_name = "master"
-        repo = Repository.query.filter_by(name=repo_name).one()
+        repo_name = dsc.get_val('Target')
+        repo = None
+        try:
+            repo = Repository.query.filter_by(name=repo_name).one()
+        except:
+            self._reject_dsc("Could not find target repository: %s" % (repo_name), dsc)
+            return
 
-        repo_pool_path = os.path.join(REPO_ROOT, repo_name, "pool", pkgid[0])
-        repo_icons_path = os.path.join(REPO_ROOT, repo_name, "assets", pkg.get_id(), "icons")
+        repo_pool_path = os.path.join(repo.root_dir, "pool", pkgid[0])
+        repo_icons_path = os.path.join(repo.root_dir, "assets", pkg.get_id(), "icons")
         pkg_dest = os.path.join(repo_pool_path, dest_pkgfname)
-
-        pkg_sha256 = None
-        f = open(pkg_fname, 'rb')
-        with f:
-            pkg_sha256 = sha256(f.read()).hexdigest()
 
         dbcpt = Component(
             cid=cpt.get_id(),
@@ -101,7 +104,7 @@ class IPKImporter():
             version=pki.get_version(),
             fname=pkg_dest,
             architecture=arch,
-            sha256sum=pkg_sha256,
+            sha256sum=sha256sum,
             dependencies=pki.get_dependencies(),
             component=dbcpt,
             repository=repo
@@ -114,7 +117,56 @@ class IPKImporter():
             os.makedirs(repo_pool_path)
         shutil.copyfile(pkg_fname, pkg_dest)
 
+
+    def _reject_dsc(self, reason, dsc):
+        print("REJECT: %s => %s" % (reason, str(dsc)))
+        # TODO: Actually reject the package and move it to the morgue
+
+
+    def _verify_dsc(self, gpghome, dsc):
+        ctx = gpgme.Context()
+
+    def _process_dsc(self, dscfile):
+        dsc = DSCFile()
+        dsc.open(dscfile)
+
+        uploader = dsc.get_val('Uploader')
+        m = re.findall(r'<(.*?)>', uploader)
+        if not m:
+            self._reject_dsc("Unable to get uploader email address.", dsc)
+            return
+
+        user = None
+        try:
+            user = User.query.filter_by(email=m[0]).one()
+        except:
+            self._reject_dsc("Could not find user '%s'" % (uploader), dsc)
+            return
+
+        key = None
+        try:
+            key = dsc.validate(user.gpghome)
+        except Exception as e:
+            self._reject_dsc("Validation failed: %s" % (str(e)), dsc)
+            return
+
+        if key != user.pgpfpr:
+            self._reject_dsc("Validation failed: Fingerprint does not match user", dsc)
+            return
+
+        # if we are here, everything is fine - we can import the packages if their checksums match
+        for sha256sum, fname in dsc.get_files().items():
+            real_sha256 = None
+            fname_full = os.path.join(self._import_dir, fname)
+            with open(fname_full, 'rb') as f:
+                real_sha256 = sha256(f.read()).hexdigest()
+            if real_sha256 != sha256sum:
+                self._reject_dsc("Validation failed: Checksum mismatch for '%s'" % (fname), dsc)
+                return
+            self._import_package(fname_full, sha256sum, dsc)
+
+
     def import_packages(self):
-        for fname in glob.glob(self._import_dir+"/*.ipk"):
-            self._import_package(fname)
+        for fname in glob.glob(self._import_dir+"/*.dsc"):
+            self._process_dsc(fname)
         db.session.commit()

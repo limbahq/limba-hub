@@ -17,7 +17,7 @@
 
 from ..repository.models import *
 from ..extensions import db
-from ..utils import get_current_time, REPO_ROOT
+from ..utils import get_current_time
 from gi.repository import Limba
 from gi.repository import AppStream
 import os
@@ -64,7 +64,7 @@ class IndicesUpdater():
             idx[pkg.architecture]['ipk'].add_package(pki)
 
         for arch, idx in idx.items():
-            repo_index_path = os.path.join(REPO_ROOT, repo.name, "indices", arch)
+            repo_index_path = os.path.join(repo.root_dir, "indices", arch)
             if not os.path.exists(repo_index_path):
                 os.makedirs(repo_index_path)
 

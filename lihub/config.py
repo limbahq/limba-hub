@@ -40,6 +40,12 @@ class BaseConfig(object):
     LOG_FOLDER = os.path.join(INSTANCE_FOLDER_PATH, 'logs')
     make_dir(LOG_FOLDER)
 
+    USERS_FOLDER = os.path.join(INSTANCE_FOLDER_PATH, 'users')
+    make_dir(USERS_FOLDER)
+
+    REPOS_ROOT = os.path.join(INSTANCE_FOLDER_PATH, 'repositories')
+    make_dir(REPOS_ROOT)
+
     # Fild upload, should override in production.
     # Limited the maximum allowed payload to 16 megabytes.
     # http://flask.pocoo.org/docs/patterns/fileuploads/#improving-uploads

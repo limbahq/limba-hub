@@ -29,9 +29,6 @@ from datetime import datetime
 # Instance folder path, make it independent.
 INSTANCE_FOLDER_PATH = os.path.join('/tmp', 'lihub-instance')
 
-# Package repository root
-REPO_ROOT = os.path.join(INSTANCE_FOLDER_PATH, "repositories")
-
 ALLOWED_AVATAR_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 # Form validation
@@ -117,6 +114,6 @@ def id_generator(size=10, chars=string.ascii_letters + string.digits):
 def make_dir(dir_path):
     try:
         if not os.path.exists(dir_path):
-            os.mkdir(dir_path)
+            os.makedirs(dir_path)
     except Exception, e:
         raise e

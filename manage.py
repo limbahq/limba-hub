@@ -48,6 +48,7 @@ def initdb():
                 name=u'admin',
                 email=u'admin@example.com',
                 password=u'123456',
+                pgpfpr=u'0000000000000000DEADBEEF0000000000000000',
                 active=True,
                 user_detail=UserDetail(
                 sex_code=MALE,

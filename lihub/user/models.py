@@ -16,13 +16,15 @@
 # You should have received a copy of the GNU General Public
 # License along with this program.
 
+import os
 from sqlalchemy import Column, types
 from sqlalchemy.ext.mutable import Mutable
+from flask import current_app
 from flask.ext.security import Security, UserMixin, RoleMixin, SQLAlchemyUserDatastore
 from flask.ext.security.utils import encrypt_password, verify_password
 
 from ..extensions import db
-from ..utils import get_current_time, SEX_TYPE, STRING_LEN
+from ..utils import make_dir, get_current_time, SEX_TYPE, STRING_LEN
 from .constants import DEFAULT_USER_AVATAR
 from ..repository.models import Repository
 
@@ -130,5 +132,13 @@ class User(db.Model, UserMixin):
 
     def check_name(self, name):
         return User.query.filter(db.and_(User.name == name, User.email != self.id)).count() == 0
+
+    @property
+    def gpghome(self):
+        root = current_app.config['USERS_FOLDER']
+        path = os.path.join(root, self.name, "gpg")
+        make_dir(path)
+        return path
+
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)

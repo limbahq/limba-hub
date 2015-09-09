@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public
 # License along with this program.
 
+import os
 from sqlalchemy import Column, Table, types
 from sqlalchemy.ext.mutable import Mutable
+from flask import current_app
 
 from ..extensions import db
-from ..utils import get_current_time, STRING_LEN
+from ..utils import make_dir, get_current_time, STRING_LEN
 
 from .constants import RepoFlag
 
@@ -35,6 +37,19 @@ class Repository(db.Model):
 
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship("User", uselist=False, backref="repositories")
+
+
+    @property
+    def root_dir(self):
+        main_root = current_app.config['REPOS_ROOT']
+        path = None
+        if self.toplevel:
+            path = os.path.join(main_root, self.name)
+        else:
+            path = os.path.join(main_root, "users", self.user.name, self.name)
+        make_dir(path)
+        return path
+
 
 class Category(db.Model):
 
