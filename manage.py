@@ -21,7 +21,7 @@ from flask.ext.script import Manager
 from lihub import create_app
 from lihub.extensions import db
 from lihub.user import User, UserDetail, user_datastore
-from lihub.repository import Repository, Category, RepoFlag
+from lihub.repository import Repository, RepoPermission, Category, RepoFlag
 from lihub.utils import MALE
 from lihub.config import DefaultConfig
 
@@ -61,26 +61,36 @@ def initdb():
     master_repo = Repository(
             name=u'master',
             user=admin,
-            toplevel=True
-            )
+            toplevel=True)
     master_nonfree_repo = Repository(
             name=u'nonfree',
             user=admin,
             toplevel=True,
-            flag=RepoFlag.NONFREE
-            )
+            flag=RepoFlag.NONFREE)
     db.session.add(master_repo)
     db.session.add(master_nonfree_repo)
+
+    master_perm = RepoPermission(user=admin,
+                pkgname=u'*',
+                repository=master_repo,
+                details="Default permissions")
+    nonfree_perm = RepoPermission(user=admin,
+                pkgname=u'*',
+                repository=master_nonfree_repo,
+                details="Default permissions")
+    db.session.add(master_perm)
+    db.session.add(nonfree_perm)
 
     db.session.add(Category(idname="office",        name="Office", description="Office software"))
     db.session.add(Category(idname="tools",         name="Tools", description="Helpful utilities"))
     db.session.add(Category(idname="customization", name="Customization", description="Customize your OS"))
     db.session.add(Category(idname="development",   name="Development", description="Software development"))
     db.session.add(Category(idname="graphics",      name="Graphics", description="Graphics & design"))
-    db.session.add(Category(idname="internet",      name="Internet", description="Internet & network"))
+    db.session.add(Category(idname="network",       name="Network", description="Internet & network"))
     db.session.add(Category(idname="science",       name="Science", description="Scientific software"))
+    db.session.add(Category(idname="education",     name="Education", description="Education"))
     db.session.add(Category(idname="multimedia",    name="Multimedia", description="Audio & Video"))
-    db.session.add(Category(idname="games",         name="Games", description="A nice description"))
+    db.session.add(Category(idname="games",         name="Games", description="Games"))
     db.session.add(Category(idname="system",        name="System", description="System tools"))
     db.session.add(Category(idname="other",         name="Other", description="Miscellaneous software"))
     db.session.add(Category(idname="components",    name="Technical Items", description="Technical items"))

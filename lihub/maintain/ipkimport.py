@@ -35,6 +35,26 @@ class IPKImporter():
         self._asmdata = AppStream.Metadata()
         self._asmdata.set_locale("C")
 
+        self._xdg_cat_map = { 'AudioVideo': self._category_by_id("multimedia"),
+                        'Audio': self._category_by_id("multimedia"),
+                        'Video': self._category_by_id("multimedia"),
+                        'Development': self._category_by_id("development"),
+                        'Education': self._category_by_id("education"),
+                        'Game': self._category_by_id("games"),
+                        'Graphics': self._category_by_id("graphics"),
+                        'Network': self._category_by_id("network"),
+                        'Office': self._category_by_id("customization"),
+                        'Science': self._category_by_id("science"),
+                        'Settings': self._category_by_id("tools"),
+                        'System': self._category_by_id("system"),
+                        'Utility': self._category_by_id("tools")
+                      }
+
+
+    def _category_by_id(self, cat_name):
+        return Category.query.filter_by(idname=cat_name).one()
+
+
     def _map_categories(self, cpt):
         xdg_cats = cpt.get_categories()
         if cpt.get_kind() != AppStream.ComponentKind.DESKTOP:
@@ -43,16 +63,22 @@ class IPKImporter():
             return [Category.query.filter_by(idname="other").one()]
 
         cats = list()
-        cats.append(Category.query.filter_by(idname="science").one())
+        for xcat in xdg_cats:
+            cat = self._xdg_cat_map.get(xcat)
+            if cat:
+                cats.append(cat)
+        if len(cats) == 0:
+            return [Category.query.filter_by(idname="other").one()]
 
         return cats
+
 
     def _import_package(self, pkg_fname, sha256sum, dsc):
         pkg = Limba.Package()
         pkg.open_file(pkg_fname)
 
         if pkg.has_embedded_packages():
-            print("SKIP: %s" % (pkg_fname))
+            self._reject_dsc("Package contains embedded packages. This is not allowed in repositories.", dsc)
             return
 
         pki = pkg.get_info()
@@ -123,14 +149,14 @@ class IPKImporter():
         # TODO: Actually reject the package and move it to the morgue
 
 
-    def _verify_dsc(self, gpghome, dsc):
-        ctx = gpgme.Context()
-
     def _process_dsc(self, dscfile):
         dsc = DSCFile()
         dsc.open(dscfile)
 
         uploader = dsc.get_val('Uploader')
+        if not uploader:
+            self._reject_dsc("Uploader field was not set.", dsc)
+            return
         m = re.findall(r'<(.*?)>', uploader)
         if not m:
             self._reject_dsc("Unable to get uploader email address.", dsc)

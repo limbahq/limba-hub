@@ -51,6 +51,19 @@ class Repository(db.Model):
         return path
 
 
+class RepoPermission(db.Model):
+
+    __tablename__ = 'repo_permissions'
+
+    id = Column(db.Integer, primary_key=True)
+    user_id = Column(db.Integer, db.ForeignKey("users.id"))
+    user = db.relationship("User", uselist=False, backref="repo_permissions")
+    pkgname = Column(db.String(), nullable=False)
+    repo_id = Column(db.Integer, db.ForeignKey("repositories.id"))
+    repository = db.relationship("Repository", uselist=False, backref="repo_permissions")
+    details = Column(db.String(), nullable=True)
+
+
 class Category(db.Model):
 
     __tablename__ = 'categories'
@@ -59,6 +72,7 @@ class Category(db.Model):
     idname = Column(db.String(), nullable=False)
     name = Column(db.String(), nullable=False)
     description = Column(db.String(), nullable=False)
+
 
 class Package(db.Model):
 
@@ -86,6 +100,7 @@ component_categories = Table('component_categories', db.Model.metadata,
      Column('component_id', db.Integer, db.ForeignKey('components.id')),
      Column('category_id', db.Integer, db.ForeignKey('categories.id'))
 )
+
 
 class Component(db.Model):
 
