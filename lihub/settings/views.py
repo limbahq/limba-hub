@@ -17,6 +17,7 @@
 # License along with this program.
 
 import os
+import re
 import hashlib
 
 from datetime import datetime
@@ -27,7 +28,7 @@ from flask.ext.login import login_required, current_user
 from ..extensions import db
 from ..user import User
 from ..utils import allowed_file, make_dir
-from .forms import ProfileForm, PasswordForm
+from .forms import ProfileForm, PasswordForm, PGPKeyImportForm
 from ..repository import Repository
 
 
@@ -97,3 +98,32 @@ def password():
 
     return render_template('settings/password.html', user=user,
             active="password", form=form)
+
+@settings.route('/pgpkey', methods=['GET', 'POST'])
+@login_required
+def pgpkey():
+    user = User.query.filter_by(name=current_user.name).first_or_404()
+    form = PGPKeyImportForm(next=request.args.get('next'))
+
+    if form.validate_on_submit():
+        form.populate_obj(user)
+
+        fpr = form.Fingerprint.data
+
+        fpr = fpr.replace(" ", "")
+        valid = re.match('^[\w]+$', fpr) is not None
+        if valid:
+            try:
+                user.import_pgpkey(fpr)
+
+                db.session.add(user)
+                db.session.commit()
+
+                flash('Key import successful.', 'success')
+            except Exception as e:
+                flash("Unable to import key: %s" % (str(e)), 'danger')
+        else:
+            flash('Fingerprint is invalid!', 'danger')
+
+    return render_template('settings/pgpkey.html', user=user,
+            active="pgpkey", form=form)

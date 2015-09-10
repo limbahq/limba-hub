@@ -22,7 +22,7 @@ from lihub import create_app
 from lihub.extensions import db
 from lihub.user import User, UserDetail, user_datastore
 from lihub.repository import Repository, RepoPermission, Category, RepoFlag
-from lihub.utils import MALE
+from lihub.utils import MALE, OTHER
 from lihub.config import DefaultConfig
 
 
@@ -51,12 +51,26 @@ def initdb():
                 pgpfpr=u'0000000000000000DEADBEEF0000000000000000',
                 active=True,
                 user_detail=UserDetail(
-                sex_code=MALE,
+                sex_code=OTHER,
                 url=u'http://admin.example.com',
                 location=u'Berlin',
                 bio=u'Master of the Universe!'))
     admin_role = user_datastore.create_role(name='admin', description="The masters of each and everything.")
+    user_role = user_datastore.create_role(name='user', description="A normal, uploading user of the service.")
     user_datastore.add_role_to_user(admin, admin_role)
+
+    user = user_datastore.create_user(
+                name=u'matthias',
+                email=u'mak@debian.org',
+                password=u'sample123',
+                pgpfpr=u'0000000000000000DABBAD000000000000000000',
+                active=True,
+                user_detail=UserDetail(
+                sex_code=MALE,
+                url=u'http://blog.tenstral.net',
+                location=u'Berlin',
+                bio=u'The average guy.'))
+    user_datastore.add_role_to_user(user, user_role)
 
     master_repo = Repository(
             name=u'master',

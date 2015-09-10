@@ -16,7 +16,7 @@
 # License along with this program.
 
 import os
-from .utils import run_command
+from ..utils import run_command
 
 
 class DscFileException(Exception):

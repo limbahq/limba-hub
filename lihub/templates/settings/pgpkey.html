@@ -1,0 +1,14 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block body %}
+<div style="width:70%;margin-top:40px;">
+  <h4>Current active PGP key</h4>
+  <p><strong>Fingerprint:</strong> <code>{{user.pgpfpr}}</code></p>
+
+  <h4>Import an OpenPGP key</h4>
+  <p>To start using an OpenPGP key to upload Limba packages, simply paste its fingerprint below.</p>
+    {{ render_form(url_for('settings.pgpkey'), form) }}
+</div>
+{% endblock %}

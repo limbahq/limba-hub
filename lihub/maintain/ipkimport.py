@@ -172,6 +172,7 @@ class IPKImporter():
         key = None
         try:
             key = dsc.validate(user.gpghome)
+            key = key.replace(' ', '')
         except Exception as e:
             self._reject_dsc("Validation failed: %s" % (str(e)), dsc)
             return

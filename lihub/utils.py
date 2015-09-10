@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2015 Matthias Klumpp <mak@debian.org>
-# Copyright (C) 2013 Wilson Xu <imwilsonxu@gmail.com>
+# Copyright (c) 2012-2013 Paul Tagliamonte <paultag@debian.org>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public  License
@@ -17,12 +17,15 @@
 # License along with this program.
 
 """
-    Utils has nothing to do with models and views.
+    Helper functions and constants.
 """
 
+import os
+import sys
+import shlex
+import subprocess
 import string
 import random
-import os
 
 from datetime import datetime
 
@@ -117,3 +120,29 @@ def make_dir(dir_path):
             os.makedirs(dir_path)
     except Exception, e:
         raise e
+
+
+def run_command(command, input=None):
+    if not isinstance(command, list):
+        command = shlex.split(command)
+
+    if not input:
+        input = None
+    elif isinstance(input, unicode_type):
+        input = input.encode('utf-8')
+    elif not isinstance(input, binary_type):
+        input = input.read()
+
+    try:
+        pipe = subprocess.Popen(command,
+                                shell=False,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                )
+    except OSError:
+        return (None, None, -1)
+
+    (output, stderr) = pipe.communicate(input=input)
+    (output, stderr) = (c.decode('utf-8', errors='ignore') for c in (output, stderr))
+    return (output, stderr, pipe.returncode)

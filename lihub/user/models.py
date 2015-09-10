@@ -24,7 +24,7 @@ from flask.ext.security import Security, UserMixin, RoleMixin, SQLAlchemyUserDat
 from flask.ext.security.utils import encrypt_password, verify_password
 
 from ..extensions import db
-from ..utils import make_dir, get_current_time, SEX_TYPE, STRING_LEN
+from ..utils import make_dir, get_current_time, SEX_TYPE, STRING_LEN, run_command
 from .constants import DEFAULT_USER_AVATAR
 from ..repository.models import Repository
 
@@ -59,6 +59,10 @@ class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
+
+
+class KeyImportException(Exception):
+    pass
 
 
 class User(db.Model, UserMixin):
@@ -139,6 +143,33 @@ class User(db.Model, UserMixin):
         path = os.path.join(root, self.name, "gpg")
         make_dir(path)
         return path
+
+
+    def import_pgpkey(self, fingerprint):
+        """
+        Import an OpenPGP key
+        """
+
+        keyring = os.path.join(self.gpghome, "keyring.gpg")
+
+        # FIXME: Delete old key (or even the whole keyring?)
+
+        (gpg_output, gpg_output_stderr, exit_status) = run_command([
+            "gpg", "--batch", "--status-fd", "1",
+            "--no-default-keyring", "--keyring", keyring,
+            "--recv-key", fingerprint,
+        ])
+
+        if exit_status == -1:
+            raise KeyImportException(
+                "Unknown problem while importing key.")
+
+        if gpg_output.count('[GNUPG:] IMPORTED') and gpg_output.count('[GNUPG:] IMPORT_OK'):
+            self.pgpfpr = fingerprint
+        else:
+            raise KeyImportException(
+                "Unknown problem while importing key."
+            )
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)

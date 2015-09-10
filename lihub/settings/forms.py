@@ -64,3 +64,9 @@ class PasswordForm(Form):
         user = User.get_by_id(current_user.id)
         if not user.check_password(field.data):
             raise ValidationError("Password is wrong.")
+
+
+class PGPKeyImportForm(Form):
+    next = HiddenField()
+    Fingerprint = TextField('Fingerprint', [Required(), Length(41, 51)])
+    submit = SubmitField(u'Import')
