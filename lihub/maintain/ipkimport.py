@@ -15,21 +15,23 @@
 # You should have received a copy of the GNU General Public
 # License along with this program.
 
-from ..repository.models import *
-from ..user import User
-from ..extensions import db
-from ..utils import get_current_time
-from .dscfile import DSCFile
+import os
+import glob
+import shutil
+import re
 import gi
 gi.require_version('Limba', '1.0')
 gi.require_version('AppStream', '0.8')
 from gi.repository import Limba
 from gi.repository import AppStream
 from hashlib import sha256
-import os
-import glob
-import shutil
-import re
+
+from ..utils import build_cpt_path
+from ..repository.models import *
+from ..user import User
+from ..extensions import db
+from ..utils import get_current_time
+from .dscfile import DSCFile
 
 
 class IPKImporter():
@@ -93,6 +95,7 @@ class IPKImporter():
         cpt = self._asmdata.get_component()
 
         pkgid = pkg.get_id()
+        cptname = pki.get_name()
         arch = pki.get_architecture()
 
         dest_pkgfname = "%s_%s.ipk" % (pkgid.replace("/", "-"), arch)
@@ -110,13 +113,14 @@ class IPKImporter():
             self._reject_dsc("Could not find target repository: %s" % (repo_name), dsc)
             return
 
-        repo_pool_path = os.path.join(repo.root_dir, "pool", pkgid[0].lower())
-        repo_icons_path = os.path.join(repo.root_dir, "assets", pkg.get_id(), "icons")
+        repo_pool_path = os.path.join(repo.root_dir, "pool", build_cpt_path (cptname))
+        repo_icons_path = os.path.join(repo.root_dir, "assets", build_cpt_path (cptname), pki.get_version(), "icons")
         pkg_dest = os.path.join(repo_pool_path, dest_pkgfname)
 
         dbcpt = Component(
             cid=cpt.get_id(),
             kind=AppStream.ComponentKind.to_string(cpt.get_kind()),
+            sdk=True if pki.get_kind() == Limba.PackageKind.DEVEL else False,
             name=cpt.get_name(),
             summary=cpt.get_summary(),
             description=cpt_desc,
@@ -131,6 +135,7 @@ class IPKImporter():
         dbpkg = Package(
             name=pki.get_name(),
             version=pki.get_version(),
+            kind=PackageKind.SDK if pki.get_kind() == Limba.PackageKind.DEVEL else PackageKind.COMMON,
             fname=pkg_dest,
             architecture=arch,
             sha256sum=sha256sum,

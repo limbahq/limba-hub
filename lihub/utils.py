@@ -146,3 +146,23 @@ def run_command(command, input=None):
     (output, stderr) = pipe.communicate(input=input)
     (output, stderr) = (c.decode('utf-8', errors='ignore') for c in (output, stderr))
     return (output, stderr, pipe.returncode)
+
+
+def build_cpt_path(cptid):
+    gid = None
+    parts = None
+
+    # place SDKs alongside runtime packages
+    if cptid.endswith(".sdk"):
+        cptid = cptid[:-4]
+
+    # names follow a reverse-URL scheme, reflect that in the file path for
+    # some common TLDs.
+    if cptid.startswith(("org.", "net.", "com.", "io.")):
+        parts = cptid.split(".", 2)
+    if parts and len(parts) > 2:
+        gid = "%s/%s/%s" % (parts[0].lower(), parts[1], parts[2])
+    else:
+        gid = "%s/%s" % (cptid[0].lower(), cptid)
+
+    return gid

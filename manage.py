@@ -25,6 +25,11 @@ from lihub.repository import Repository, RepoPermission, Category, RepoFlag
 from lihub.utils import MALE, OTHER
 from lihub.config import DefaultConfig
 
+try:
+    from flask_frozen import Freezer
+except:
+    pass
+
 
 app = create_app()
 manager = Manager(app)
@@ -35,6 +40,14 @@ def run():
     """Run on local machine."""
 
     app.run()
+
+
+@manager.command
+def freeze():
+    """Create a static version of the LimbaHub HTML pages."""
+
+    freezer = Freezer(app)
+    freezer.freeze()
 
 
 @manager.command

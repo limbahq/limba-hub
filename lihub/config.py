@@ -48,6 +48,9 @@ class BaseConfig(object):
 
     REPOS_ROOT_URL = "file://"+REPOS_ROOT
 
+    FREEZER_IGNORE_404_NOT_FOUND=True
+    FREEZER_RELATIVE_URLS=True
+
     # Fild upload, should override in production.
     # Limited the maximum allowed payload to 16 megabytes.
     # http://flask.pocoo.org/docs/patterns/fileuploads/#improving-uploads

@@ -15,7 +15,8 @@
   <img src="{{icon_url}}" alt="Icon" width="64px" height="64px" style="float: left;" />
   <div style="margin-left: 8px;">
       <h2>{{cpt.name}}</h2>
-      {% if cpt.kind != "desktop" %}<span class="label label-default" style="float:right;">technical</span>{% endif %}
+      {% if cpt.kind != "desktop" %}<span class="label label-default" style="margin-left:6px;float:right;">technical</span>{% endif %}
+      {% if cpt_sdk %}<span class="label label-info" style="margin-left:6px;float:right;">SDK available</span>{% endif %}
     <h4>{{cpt.summary}}</h4>
     <br/>
 
@@ -57,6 +58,30 @@
   </table>
 </div>
 
+{% if cpt_sdk %}
+<div class="panel panel-warning">
+  <div class="panel-heading">SDK</div>
+  <table class="table">
+      <thead>
+        <tr>
+          <th>Package</th>
+          <th>Version</th>
+          <th>Architecture</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for pkg in packages_sdk %}
+        <tr>
+          <td>{{pkg.name}}</td>
+          <td>{{pkg.version}}</td>
+          <td>{{pkg.architecture}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+  </table>
+</div>
+{% endif %}
+
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="detailsHead">
@@ -72,7 +97,7 @@
         <p>{{packages[0].dependencies}}</p>
         <p><b>Installation Command:</b></p>
         <div class="well well-sm">
-          sudo lipa install {{packages[0].name}}-{{packages[0].version}}
+          sudo limba install {{packages[0].name}}-{{packages[0].version}}
         </div>
       </div>
     </div>

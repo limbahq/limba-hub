@@ -25,6 +25,7 @@ from flask.ext.mail import Message
 from flask.ext.babel import gettext as _
 from flask.ext.login import login_required, login_user, current_user, logout_user, confirm_login, login_fresh
 
+from ..utils import build_cpt_path
 from ..user import User, UserDetail
 from ..repository import Repository, Package, Component, Category
 from ..extensions import db, mail
@@ -148,6 +149,7 @@ def signup():
     return render_template('frontend/signup.html', form=form)
 
 
+@login_required
 @frontend.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     user = None
@@ -217,7 +219,7 @@ def get_icon_url_for_pkg(mrepo, pkg):
 
         sizes = ["64x64", "128x128"]
         for size in sizes:
-            icon_path = os.path.join("assets", pkg.name, pkg.version, "icons", size, icon_name)
+            icon_path = os.path.join("assets", build_cpt_path (pkg.name), pkg.version, "icons", size, icon_name)
             print(os.path.join(mrepo.root_dir, icon_path))
             if os.path.isfile(os.path.join(mrepo.root_dir, icon_path)):
                 icon_url = mrepo.data_url_for(icon_path)
@@ -230,11 +232,31 @@ def software_page(cpt_id):
     mrepo = Repository.query.filter_by(name="master").one()
 
     cpt = Component.query.filter_by(repository=mrepo, cid=cpt_id).first()
-    packages = Package.query.filter_by(repository=mrepo, component=cpt)
+    if cpt.sdk:
+        # get the runtime component for this development cpt
+        cpt_sdk = cpt
+        if cpt_id.endswith(".sdk"):
+            cpt_id_rt = cpt_id[:-4]
+            cpt = Component.query.filter_by(repository=mrepo, cid=cpt_id_rt).first()
+        else:
+            cpt = None
+    else:
+        # get the SDK component
+        cpt_id_sdk = "%s.sdk" % (cpt_id)
+        cpt_sdk = Component.query.filter_by(repository=mrepo, cid=cpt_id_sdk).first()
+
+    packages = None
+    packages_sdk = None
+
+    if cpt:
+        packages = Package.query.filter_by(repository=mrepo, component=cpt)
+    if cpt_sdk:
+        packages_sdk = Package.query.filter_by(repository=mrepo, component=cpt_sdk)
 
     icon_url = get_icon_url_for_pkg(mrepo, packages[0])
 
-    return render_template('frontend/software.html', active="software", packages=packages, cpt=cpt, icon_url=icon_url)
+    return render_template('frontend/software.html', active="software", packages=packages, cpt=cpt,
+                           packages_sdk=packages_sdk, cpt_sdk=cpt_sdk, icon_url=icon_url)
 
 @frontend.route('/browse')
 def browse():
@@ -249,7 +271,8 @@ def browse_category(category):
 
     cat = Category.query.filter_by(idname=category).one()
 
-    components = Component.query.filter(Component.repository==mrepo).filter(Component.categories.any(Category.idname.in_([category])))
+    components = Component.query.filter(Component.repository==mrepo).filter(
+                                    Component.categories.any(Category.idname.in_([category]))).filter(Component.sdk==False)
 
     current_app.jinja_env.globals.update(get_icon_url_for_pkg=get_icon_url_for_pkg)
     return render_template('frontend/browse_category.html', active="browse", category=cat, components=components, repo=mrepo)

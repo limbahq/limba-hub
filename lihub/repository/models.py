@@ -23,7 +23,7 @@ from flask import current_app
 from ..extensions import db
 from ..utils import make_dir, get_current_time, STRING_LEN
 
-from .constants import RepoFlag
+from .constants import RepoFlag, PackageKind
 
 class Repository(db.Model):
 
@@ -86,6 +86,7 @@ class Package(db.Model):
     version = Column(db.String(), nullable=False)
     fname = Column(db.String(), nullable=False)
     architecture = Column(db.String(), nullable=False)
+    kind = Column(db.Integer, default=PackageKind.COMMON)
 
     dependencies = Column(db.String(), nullable=True)
 
@@ -112,6 +113,7 @@ class Component(db.Model):
     id = Column(db.Integer, primary_key=True)
     cid = Column(db.String(), nullable=False)
     kind = Column(db.String(), nullable=False)
+    sdk = Column(db.Boolean, default=False)
 
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship("User", uselist=False, backref="components")
