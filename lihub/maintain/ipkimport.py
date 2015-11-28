@@ -20,6 +20,9 @@ from ..user import User
 from ..extensions import db
 from ..utils import get_current_time
 from .dscfile import DSCFile
+import gi
+gi.require_version('Limba', '1.0')
+gi.require_version('AppStream', '0.8')
 from gi.repository import Limba
 from gi.repository import AppStream
 from hashlib import sha256
@@ -92,7 +95,7 @@ class IPKImporter():
         pkgid = pkg.get_id()
         arch = pki.get_architecture()
 
-        dest_pkgfname = "%s_%s.ipk" % (pkgid, arch)
+        dest_pkgfname = "%s_%s.ipk" % (pkgid.replace("/", "-"), arch)
 
         cpt_desc = cpt.get_description()
         if not cpt_desc:
@@ -107,7 +110,7 @@ class IPKImporter():
             self._reject_dsc("Could not find target repository: %s" % (repo_name), dsc)
             return
 
-        repo_pool_path = os.path.join(repo.root_dir, "pool", pkgid[0])
+        repo_pool_path = os.path.join(repo.root_dir, "pool", pkgid[0].lower())
         repo_icons_path = os.path.join(repo.root_dir, "assets", pkg.get_id(), "icons")
         pkg_dest = os.path.join(repo_pool_path, dest_pkgfname)
 

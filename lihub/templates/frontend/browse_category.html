@@ -17,7 +17,7 @@
   {% for cpt in components %}
   <div class="col-xs-5 col-md-3">
     <a class="btn btn-default" role="button" href="{{ url_for('frontend.software_page', cpt_id=cpt.cid) }}" style="margin-bottom: 20px;">
-      <img src="{{ get_icon_url_for_pkg(cpt.packages[0]) }}" alt="{{cpt.name}}" height="64px" width="64px" />&nbsp;
+      <img src="{{ get_icon_url_for_pkg(repo, cpt.packages[0]) }}" alt="{{cpt.name}}" height="64px" width="64px" />&nbsp;
       {{cpt.name}}
     </a>
   </div>

@@ -210,16 +210,17 @@ def reset_password():
 def help():
     return render_template('frontend/footers/help.html', active="help")
 
-def get_icon_url_for_pkg(pkg):
+def get_icon_url_for_pkg(mrepo, pkg):
     icon_url = url_for('static', filename='img/unknown-component.png')
     if pkg:
-        pkgid = pkg.name+"-"+pkg.version
+        icon_name = "%s-%s.png" % (pkg.name, pkg.version)
 
         sizes = ["64x64", "128x128"]
         for size in sizes:
-            icon_path = os.path.join("component_assets", pkgid, "icons", size, pkgid+".png")
-            if os.path.isfile(os.path.join(current_app.static_folder, icon_path)):
-                icon_url = url_for('static', filename=icon_path)
+            icon_path = os.path.join("assets", pkg.name, pkg.version, "icons", size, icon_name)
+            print(os.path.join(mrepo.root_dir, icon_path))
+            if os.path.isfile(os.path.join(mrepo.root_dir, icon_path)):
+                icon_url = mrepo.data_url_for(icon_path)
                 break
     return icon_url
 
@@ -231,7 +232,7 @@ def software_page(cpt_id):
     cpt = Component.query.filter_by(repository=mrepo, cid=cpt_id).first()
     packages = Package.query.filter_by(repository=mrepo, component=cpt)
 
-    icon_url = get_icon_url_for_pkg(packages[0])
+    icon_url = get_icon_url_for_pkg(mrepo, packages[0])
 
     return render_template('frontend/software.html', active="software", packages=packages, cpt=cpt, icon_url=icon_url)
 
@@ -251,4 +252,4 @@ def browse_category(category):
     components = Component.query.filter(Component.repository==mrepo).filter(Component.categories.any(Category.idname.in_([category])))
 
     current_app.jinja_env.globals.update(get_icon_url_for_pkg=get_icon_url_for_pkg)
-    return render_template('frontend/browse_category.html', active="browse", category=cat, components=components)
+    return render_template('frontend/browse_category.html', active="browse", category=cat, components=components, repo=mrepo)

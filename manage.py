@@ -63,7 +63,7 @@ def initdb():
                 name=u'matthias',
                 email=u'mak@debian.org',
                 password=u'sample123',
-                pgpfpr=u'0000000000000000DABBAD000000000000000000',
+                pgpfpr=u'0000000000000000D0ABLE00000000000000000',
                 active=True,
                 user_detail=UserDetail(
                 sex_code=MALE,

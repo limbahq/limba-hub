@@ -50,6 +50,9 @@ class Repository(db.Model):
         make_dir(path)
         return path
 
+    def data_url_for (self, filename):
+        return "%s/%s/%s" % (current_app.config['REPOS_ROOT_URL'], self.name, filename)
+
 
 class RepoPermission(db.Model):
 

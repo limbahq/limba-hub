@@ -78,7 +78,7 @@ class User(db.Model, UserMixin):
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
-    pgpfpr = Column(db.String(STRING_LEN), unique=True)
+    pgpfpr = Column(db.String(STRING_LEN), unique=False)
 
     avatar = Column(db.String(STRING_LEN))
 
