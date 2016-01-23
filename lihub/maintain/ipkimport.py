@@ -21,7 +21,7 @@ import shutil
 import re
 import gi
 gi.require_version('Limba', '1.0')
-gi.require_version('AppStream', '0.8')
+gi.require_version('AppStream', '1.0')
 from gi.repository import Limba
 from gi.repository import AppStream
 from hashlib import sha256
