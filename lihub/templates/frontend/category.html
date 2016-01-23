@@ -1,0 +1,55 @@
+{% from 'macros/_misc.html' import render_pagination, render_user_table %}
+
+{% extends 'layouts/base.html' %}
+
+{% block title %}Browse {{category.name}} Software{% endblock %}
+
+{% block body %}
+<div>
+  <ol class="breadcrumb">
+  <li><a href="{{ url_for('frontend.browse') }}">Browse</a></li>
+  {% if category.parent %}
+  <li><a href="{{ url_for('frontend.browse') }}/{{category.parent.idname}}">{{category.parent.name}}</a></li>
+  {% endif %}
+  <li class="active">{{category.name}}</li>
+</ol>
+
+{% if subcategories %}
+  <h3>Categories</h3>
+
+  <div class="row">
+    {% for cat in subcategories %}
+    <div class="col-xs-6 col-md-3 btn-group">
+      <a class="btn btn-default btn-block text-center" role="button" href="{{ url_for('frontend.browse_category', main_category=cat.parent.idname, sub_category=cat.idname) }}" style="margin-bottom: 20px;height:80px;">
+        <img src="{{ url_for('static', filename='img/categories/') }}{{cat.idname}}.png" alt="{{cat.idname}}" width="70px" height="70px" style="float: left;vertical-align:middle;"/>&nbsp;
+        <b>{{cat.name}}</b><br/>
+        <p>{{cat.description}}</p>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+{% endif %}
+
+{% if category.parent %}
+  <h2>Browse {{category.parent.name}}/{{category.name}}</h2>
+{% else %}
+  <h2>Browse {{category.name}}</h2>
+{% endif %}
+
+<div class="row">
+  {% for cpt in components %}
+  <div class="col-xs-5 col-md-3">
+    <a class="btn btn-default" role="button" href="{{ url_for('frontend.software_page', cpt_id=cpt.cid) }}" style="margin-bottom: 20px;">
+      <img src="{{ get_icon_url_for_pkg(repo, cpt.packages[0]) }}" alt="{{cpt.name}}" height="64px" width="64px" />&nbsp;
+      {{cpt.name}}
+    </a>
+  </div>
+  {% else %}
+  <div class="col-md-8">
+    <p>Sorry, looks like there is nothing to show here.</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

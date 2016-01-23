@@ -11,7 +11,7 @@
   <div class="row">
     {% for cat in categories %}
     <div class="col-xs-6 col-md-4 btn-group">
-      <a class="btn btn-default btn-block text-center" role="button" href="{{ url_for('frontend.browse_category', category=cat.idname) }}" style="margin-bottom: 20px;height:90px;">
+      <a class="btn btn-default btn-block text-center" role="button" href="{{ url_for('frontend.browse_category', main_category=cat.idname) }}" style="margin-bottom: 20px;height:90px;">
         <img src="{{ url_for('static', filename='img/categories/') }}{{cat.idname}}.png" alt="{{cat.idname}}" width="80px" height="80px" style="float: left;vertical-align:middle;"/>&nbsp;
         <b>{{cat.name}}</b><br/>
         {{cat.description}}

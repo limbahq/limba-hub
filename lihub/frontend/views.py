@@ -277,19 +277,36 @@ def software_page(cpt_id):
 
 @frontend.route('/browse')
 def browse():
-    categories = Category.query.all()
+    categories = Category.query.filter_by(parent=None)
 
     return render_template('frontend/browse.html', active="browse", categories=categories)
 
-@frontend.route('/browse/<category>')
-def browse_category(category):
+
+@frontend.route('/browse/<main_category>')
+@frontend.route('/browse/<main_category>/<sub_category>')
+def browse_category(main_category, sub_category=None):
     # only the master repository is queried here
     mrepo = Repository.query.filter_by(name="master").one()
 
-    cat = Category.query.filter_by(idname=category).one()
+    cat = Category.query.filter_by(idname=main_category).first()
+    if not cat:
+        abort(404)
+
+    category_id = main_category
+    subcats = None
+    if sub_category:
+        subcat = Category.query.filter_by(idname=sub_category).first()
+        if not subcat:
+            abort(404)
+        if subcat.parent != cat:
+            abort(404)
+        cat = subcat
+        category_id = sub_category
+    else:
+        subcats = cat.subcategories
 
     components = Component.query.filter(Component.repository==mrepo).filter(
-                                    Component.categories.any(Category.idname.in_([category]))).filter(Component.sdk==False)
+                                    Component.categories.any(Category.idname.in_([category_id]))).filter(Component.sdk==False)
 
     current_app.jinja_env.globals.update(get_icon_url_for_pkg=get_icon_url_for_pkg)
-    return render_template('frontend/browse_category.html', active="browse", category=cat, components=components, repo=mrepo)
+    return render_template('frontend/category.html', active="browse", category=cat, subcategories=subcats, components=components, repo=mrepo)

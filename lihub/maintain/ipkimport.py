@@ -52,7 +52,9 @@ class IPKImporter():
                         'Science': self._category_by_id("science"),
                         'Settings': self._category_by_id("tools"),
                         'System': self._category_by_id("system"),
-                        'Utility': self._category_by_id("tools")
+                        'Utility': self._category_by_id("tools"),
+
+                        'Arcade': self._category_by_id("arcade")
                       }
 
 

@@ -76,6 +76,12 @@ class Category(db.Model):
     name = Column(db.String(), nullable=False)
     description = Column(db.String(), nullable=False)
 
+    parent_id = Column(db.Integer, db.ForeignKey("categories.id"))
+    parent = db.relationship("Category", remote_side=[id], backref="subcategories")
+
+    def is_toplevel(self):
+        return not self.subcategories
+
 
 class Package(db.Model):
 
