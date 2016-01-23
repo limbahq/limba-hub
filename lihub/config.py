@@ -18,7 +18,7 @@
 
 import os
 
-from utils import make_dir, INSTANCE_FOLDER_PATH
+from utils import make_dir
 
 
 class BaseConfig(object):
@@ -28,6 +28,9 @@ class BaseConfig(object):
     # Get app root path, also can use flask.root_path.
     # ../../config.py
     PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+
+    # Instance folder path, make it independent.
+    INSTANCE_FOLDER_PATH = os.path.join('/tmp', 'lihub-instance')
 
     DEBUG = False
     TESTING = False
@@ -64,6 +67,9 @@ class BaseConfig(object):
 class DefaultConfig(BaseConfig):
 
     DEBUG = True
+
+    # Instance folder path, make it independent.
+    INSTANCE_FOLDER_PATH = os.path.join('/tmp', 'lihub-instance')
 
     # Flask-Sqlalchemy: http://packages.python.org/Flask-SQLAlchemy/config.html
     SQLALCHEMY_ECHO = False

@@ -22,15 +22,19 @@ from flask import Flask, request, render_template
 from flask.ext.babel import Babel
 from flask.ext.security import Security
 
-from .config import DefaultConfig
 from .user import User, user, user_datastore
 from .settings import settings
 from .frontend import frontend
 from .repository import repository
 from .admincp import admincp
 from .extensions import db, mail, cache
-from .utils import INSTANCE_FOLDER_PATH
 
+try:
+    from .local_config import DefaultConfig
+except:
+    from .config import DefaultConfig
+    if not os.path.isdir(DefaultConfig.INSTANCE_FOLDER_PATH):
+        raise Exception("Tried to load default configuration, but it's path doesn't exist. This is usually a configuration issue, you probably wanted to load a local configuration.")
 
 # For import *
 __all__ = ['create_app']
@@ -52,7 +56,7 @@ def create_app(config=None, app_name=None, blueprints=None):
     if blueprints is None:
         blueprints = DEFAULT_BLUEPRINTS
 
-    app = Flask(app_name, instance_path=INSTANCE_FOLDER_PATH, instance_relative_config=True)
+    app = Flask(app_name, instance_path=DefaultConfig.INSTANCE_FOLDER_PATH, instance_relative_config=True)
     configure_app(app, config)
     configure_hook(app)
     configure_blueprints(app, blueprints)

@@ -23,7 +23,13 @@ from lihub.extensions import db
 from lihub.user import User, UserDetail, user_datastore
 from lihub.repository import Repository, RepoPermission, Category, RepoFlag
 from lihub.utils import MALE, OTHER
-from lihub.config import DefaultConfig
+
+try:
+    from lihub.local_config import DefaultConfig
+except:
+    from lihub.config import DefaultConfig
+    if not os.path.isdir(DefaultConfig.INSTANCE_FOLDER_PATH):
+        raise Exception("Tried to load default configuration, but it's path doesn't exist. This is usually a configuration issue, you probably wanted to load a local configuration.")
 
 try:
     from flask_frozen import Freezer
