@@ -27,7 +27,7 @@ from .user import User, user, user_datastore
 from .settings import settings
 from .frontend import frontend
 from .repository import repository
-from .admin import admin
+from .admincp import admincp
 from .extensions import db, mail, cache
 from .utils import INSTANCE_FOLDER_PATH
 
@@ -40,7 +40,7 @@ DEFAULT_BLUEPRINTS = (
     user,
     settings,
     repository,
-    admin,
+    admincp,
 )
 
 

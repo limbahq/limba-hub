@@ -1,0 +1,9 @@
+{% from "macros/_form.html" import render_form %}
+{% extends "admincp/layout.html" %}
+
+{% block body %}
+<div class="container">
+    <h2>Admin Control Panel</h2>
+    {{ render_form(url_for('admincp.index'), form) }}
+</div>
+{% endblock %}

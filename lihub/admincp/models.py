@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2015 Matthias Klumpp <mak@debian.org>
-# Copyright (C) 2013 Wilson Xu <imwilsonxu@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public  License
@@ -16,15 +15,16 @@
 # You should have received a copy of the GNU General Public
 # License along with this program.
 
-from flask.ext.wtf import Form
-from wtforms import HiddenField, SubmitField, RadioField, DateField
-from wtforms.validators import AnyOf
+import os
+from sqlalchemy import Column, Table, types
+from sqlalchemy.ext.mutable import Mutable
+from flask import current_app
 
-class UserForm(Form):
-    next = HiddenField()
-    #role_code = RadioField(u"Role", [AnyOf([str(val) for val in USER_ROLE.keys()])],
-    #        choices=[(str(val), label) for val, label in USER_ROLE.items()])
-    active = RadioField(u"Status")
-    # A demo of datepicker.
-    created_time = DateField(u'Created time')
-    submit = SubmitField(u'Save')
+from ..extensions import db
+
+class GlobalSettings(db.Model):
+
+    __tablename__ = 'global_settings'
+
+    id = Column(db.Integer, primary_key=True)
+    allow_registration = Column(db.Boolean())

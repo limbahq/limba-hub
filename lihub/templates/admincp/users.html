@@ -1,4 +1,4 @@
-{% extends "admin/layout.html" %}
+{% extends "admincp/layout.html" %}
 
 {% block body %}
 <div class="container">
@@ -7,8 +7,8 @@
         <thead>
             <tr>
                 <th>Username</th>
-                <th>Status</th>
-                <th>Role</th>
+                <th>Active</th>
+                <th>Roles</th>
                 <th>Created Time</th>
                 <th></th>
             </tr>
@@ -16,10 +16,14 @@
         {% for user in users %}
         <tr>
             <td>{{ user.name }}</td>
-            <td>{{ user.status }}</td>
-            <td>{{ user.role }}</td>
+            <td>{{ user.active }}</td>
+            <td>
+            {% for role in user.roles %}
+                {{ role.name }} |
+            {% endfor %}
+	    </td>
             <td>{{ user.created_time|format_date }}</td>
-            <td><a href="{{ url_for('admin.user', user_id=user.id) }}">Edit</a></td>
+            <td><a href="{{ url_for('admincp.user', user_id=user.id) }}">Edit</a></td>
         </tr>
         {% endfor %}
     </table>

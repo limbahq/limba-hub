@@ -29,10 +29,20 @@ from ..utils import build_cpt_path
 from ..user import User, UserDetail
 from ..repository import Repository, Package, Component, Category
 from ..extensions import db, mail
+from ..admincp import GlobalSettings
 from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, CreateProfileForm
 
 
 frontend = Blueprint('frontend', __name__)
+
+
+@frontend.context_processor
+def registration_allowed():
+    conf = GlobalSettings.query.first()
+    reg_allowed = False
+    if conf:
+        reg_allowed = conf.allow_registration
+    return dict(registration_allowed=reg_allowed)
 
 
 @frontend.route('/create_profile', methods=['GET', 'POST'])
@@ -132,6 +142,13 @@ def logout():
 def signup():
     if current_user.is_authenticated():
         return redirect(url_for('user.index'))
+
+    conf = GlobalSettings.query.first()
+    reg_allowed = False
+    if conf:
+        reg_allowed = conf.allow_registration
+    if not reg_allowed:
+        return render_template('frontend/signup.html')
 
     form = SignupForm(next=request.args.get('next'))
 

@@ -23,29 +23,42 @@ from ..extensions import db
 from ..decorators import admin_required
 
 from ..user import User
-from .forms import UserForm
+from .forms import UserForm, GlobalSettingsForm
+from .models import GlobalSettings
 
 
-admin = Blueprint('admin', __name__, url_prefix='/admin')
+admincp = Blueprint('admincp', __name__, url_prefix='/admincp')
 
 
-@admin.route('/')
+@admincp.route('/', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def index():
-    users = User.query.all()
-    return render_template('admin/index.html', users=users, active='index')
+    conf = GlobalSettings.query.first()
+    if not conf:
+        conf = GlobalSettings()
+    form = GlobalSettingsForm(obj=conf, next=request.args.get('next'))
+
+    if form.validate_on_submit():
+        form.populate_obj(conf)
+
+        db.session.add(conf)
+        db.session.commit()
+
+        flash('Global settings updated.', 'success')
+
+    return render_template('admincp/index.html', conf=conf, form=form, active='index')
 
 
-@admin.route('/users')
+@admincp.route('/users')
 @login_required
 @admin_required
 def users():
     users = User.query.all()
-    return render_template('admin/users.html', users=users, active='users')
+    return render_template('admincp/users.html', users=users, active='users')
 
 
-@admin.route('/user/<int:user_id>', methods=['GET', 'POST'])
+@admincp.route('/user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def user(user_id):
@@ -60,4 +73,4 @@ def user(user_id):
 
         flash('User updated.', 'success')
 
-    return render_template('admin/user.html', user=user, form=form)
+    return render_template('admincp/user.html', user=user, form=form)
