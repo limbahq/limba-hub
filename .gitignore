@@ -1,4 +1,7 @@
-# Byte-compiled / optimized / DLL files
+# Local configuration
+lihub/local_config.py
+
+# Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
 
@@ -6,19 +9,14 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-.Python
 env/
 ENV/
+.venv/
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
 *.egg-info/
 .installed.cfg
 *.egg
