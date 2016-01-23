@@ -118,6 +118,7 @@ class IPKImporter():
         repo_pool_path = os.path.join(repo.root_dir, "pool", build_cpt_path (cptname))
         repo_icons_path = os.path.join(repo.root_dir, "assets", build_cpt_path (cptname), pki.get_version(), "icons")
         pkg_dest = os.path.join(repo_pool_path, dest_pkgfname)
+        repo_location = os.path.join(build_cpt_path (cptname), dest_pkgfname)
 
         dbcpt = Component(
             cid=cpt.get_id(),
@@ -138,7 +139,7 @@ class IPKImporter():
             name=pki.get_name(),
             version=pki.get_version(),
             kind=PackageKind.SDK if pki.get_kind() == Limba.PackageKind.DEVEL else PackageKind.COMMON,
-            fname=pkg_dest,
+            fname=repo_location,
             architecture=arch,
             sha256sum=sha256sum,
             dependencies=pki.get_dependencies(),

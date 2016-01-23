@@ -17,7 +17,7 @@
 
 from ..repository.models import *
 from ..extensions import db
-from ..utils import get_current_time
+from ..utils import get_current_time, build_cpt_path
 from gi.repository import Limba
 from gi.repository import AppStream
 import os
@@ -50,7 +50,7 @@ class IndicesUpdater():
             pki.set_appname(pkg.component.name)
             pki.set_version(pkg.version)
             pki.set_checksum_sha256(pkg.sha256sum)
-            pki.set_repo_location("???")
+            pki.set_repo_location(pkg.fname)
             if pkg.dependencies:
                 pki.set_dependencies(pkg.dependencies)
 

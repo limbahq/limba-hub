@@ -155,11 +155,11 @@ def build_cpt_path(cptid):
 
     # names follow a reverse-URL scheme, reflect that in the file path for
     # some common TLDs.
-    if cptid.startswith(("org.", "net.", "com.", "io.")):
+    if cptid.startswith(("org.", "net.", "com.", "io.", "edu.", "name.")):
         parts = cptid.split(".", 2)
     if parts and len(parts) > 2:
         gid = "%s/%s/%s" % (parts[0].lower(), parts[1], parts[2])
     else:
-        gid = "%s/%s" % (cptid[0].lower(), cptid)
+        gid = "%s/%s/%s" % (cptid[0].lower(), cptid[:2].lower(), cptid)
 
     return gid
